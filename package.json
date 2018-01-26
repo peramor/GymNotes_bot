@@ -1,0 +1,13 @@
+{
+  "name": "gym-bot",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "moment": "^2.20.1",
+    "mongoose": "^5.0.1",
+    "telegraf": "^3.17.5",
+    "telegraf-session-redis": "^5.0.0"
+  }
+}
