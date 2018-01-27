@@ -33,7 +33,7 @@ restScene.hears('Начать тренировку', ctx => {
 })
 
 const startWorkoutScene = new Scene('startWorkout')
-startWorkoutScene.enter(ctx => ctx.reply('Выбери группу мышц.', Extra.markup(Markup.keyboard(['Грудь', 'Спина', 'Ноги', 'Руки', 'Плечи', 'Завершить тренировку']))))
+startWorkoutScene.enter(ctx => ctx.reply('Выбери группу мышц.', Extra.markup(Markup.keyboard(['Грудь', 'Спина', 'Ноги', 'Руки', 'Плечи', 'Завершить тренировку'].push('Hазад')))))
 startWorkoutScene.hears('Завершить тренировку', ctx => {
   fs.writeFileSync(`notebook/train-${ctx.session.train.date}.json`, JSON.stringify(ctx.session.train))
   ctx.scene.enter('rest')
