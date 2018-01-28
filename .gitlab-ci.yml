@@ -39,11 +39,9 @@ releaseVersion:
   services:
     # prod dbs
   script:
-    - echo $GCLOUD_JSON > keyfile.json
-    - docker login -u _json_key -p "$(cat keyfile.json)" https://$GCLOUD_HOST
-    - rm keyfile.json
-    - docker build -t $GCLOUD_HOST/$GCLOUD_REPO/"$(cat NAME)":"$(cat VERSION)" .
-    - docker push $GCLOUD_HOST/$GCLOUD_REPO/"$(cat NAME)":"$(cat VERSION)"
+    - docker login -u $ACR_USER -p $ACR_PWD https://$ACR_HOST
+    - docker build -t $ACR_HOST/"$(cat NAME)":"$(cat VERSION)" .
+    - docker push $ACR_HOST/"$(cat NAME)":"$(cat VERSION)"
   when: manual
   only:
     - master
