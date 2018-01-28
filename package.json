@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "glob": "^7.1.2",
-    "glob-promise": "^3.3.0",
     "moment": "^2.20.1",
     "mongoose": "^5.0.1",
     "path": "^0.12.7",

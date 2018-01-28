@@ -1,10 +1,9 @@
 const Telegraf = require('telegraf')
 const RedisSession = require('telegraf-session-redis')
-const glob = require('glob-promise')
+const glob = require('glob')
 const path = require('path')
 const Stage = require('telegraf/stage')
 const { enter, leave } = Stage
-
 
 const session = new RedisSession({
   store: {
@@ -17,19 +16,12 @@ const bot = new Telegraf(process.env.TG_BOT_TOKEN)
 
 const stage = new Stage()
 
-stage.register(require('./lib/scenes/rest'))
-stage.register(require('./lib/scenes/select-exercise'))
-stage.register(require('./lib/scenes/select-group'))
-stage.register(require('./lib/scenes/start-workout'))
+const scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
+scenesPaths.forEach(path => stage.register(require(path)))
 
 bot.use(session.middleware())
-
 bot.use(stage.middleware())
 
-// bot.use((ctx, next) => {
-//   console.log(ctx)
-//   next()
-// })
-
 bot.start(enter('rest'))
+
 bot.startPolling()
