@@ -1,14 +1,11 @@
 image: docker:latest
-
 services:
-  - mongo
-  - redis
-
+  - docker:17.09-dind
 stages:
   - versioning
   - packaging-test-image
   - packaging-prod-image
-
+  
 createVersionFile:
   stage: versioning
   image: node:8
