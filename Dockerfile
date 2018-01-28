@@ -8,8 +8,6 @@ WORKDIR /usr/src/app
 
 # copy package description
 COPY package.json /usr/src/app/
-# copy npm register
-COPY .yarnrc /usr/src/app/
 
 # Install all dependencies
 RUN yarn
