@@ -5,12 +5,12 @@ services:
   - redis
 
 stages:
-  - test-package
-  - package
-
+  - versioning
+  - packaging-test-image
+  - packaging-prod-image
 
 createVersionFile:
-  stage: pre-package
+  stage: versioning
   image: node:8
   script:
     - node _ci/create-version-file.js
@@ -19,12 +19,11 @@ createVersionFile:
       - VERSION
       - NAME
   only:
+    - pre-master
     - master
 
 testVersion:
-  stage: test-package
-  services: 
-    # dbs for testing
+  stage: packaging-test-image
   script:
     - docker login -u $ACR_USER -p $ACR_PWD https://$ACR_HOST
     - sh _ci/increment-pre-version.sh
@@ -35,9 +34,7 @@ testVersion:
     - pre-master
 
 releaseVersion:
-  stage: test-package
-  services:
-    # prod dbs
+  stage: packaging-prod-image
   script:
     - docker login -u $ACR_USER -p $ACR_PWD https://$ACR_HOST
     - docker build -t $ACR_HOST/"$(cat NAME)":"$(cat VERSION)" .
