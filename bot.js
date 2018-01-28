@@ -1,10 +1,9 @@
 const Telegraf = require('telegraf')
 const RedisSession = require('telegraf-session-redis')
-const glob = require('glob-promise')
+// const glob = require('glob-promise')
 const path = require('path')
 const Stage = require('telegraf/stage')
 const { enter, leave } = Stage
-
 
 const session = new RedisSession({
   store: {
