@@ -3,6 +3,7 @@ const RedisSession = require('telegraf-session-redis')
 const glob = require('glob')
 const path = require('path')
 const Stage = require('telegraf/stage')
+const userDb = require('./lib/db/controllers/user.controller')
 const { enter, leave } = Stage
 
 const session = new RedisSession({
@@ -22,6 +23,9 @@ scenesPaths.forEach(path => stage.register(require(path)))
 bot.use(session.middleware())
 bot.use(stage.middleware())
 
-bot.start(enter('rest'))
+bot.start(ctx => {
+  userDb.createUser(ctx.from.id)
+    .then(ctx.scene.enter('rest'))
+})
 
 bot.startPolling()
