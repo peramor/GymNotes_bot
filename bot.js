@@ -5,6 +5,7 @@ const path = require('path')
 const Stage = require('telegraf/stage')
 const userDb = require('./lib/db/controllers/user.controller')
 const { enter, leave } = Stage
+const seed = require('./exercises')
 
 const session = new RedisSession({
   store: {
