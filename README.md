@@ -16,6 +16,8 @@
 `MONGO_HOST` - host of mongo container (optional, 127.0.0.1 by default)
 `MONGO_PORT` - port where mongo is running (optional, 27017)
 
+`SEED_MONGO` - set 'no' if uploading default exercises is not needed
+
 ## Scenes
 
 1. rest
