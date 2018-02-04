@@ -27,7 +27,7 @@ bot.start(ctx => {
   userDb.createUser(ctx.from.id)
     .then(function() {
       ctx.session.hasDiary = false   
-      ctx.scene.enter('groups')   
+      ctx.scene.enter('rest')   
     })
 })
 
