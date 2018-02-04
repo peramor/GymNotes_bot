@@ -25,7 +25,10 @@ bot.use(stage.middleware())
 
 bot.start(ctx => {
   userDb.createUser(ctx.from.id)
-    .then(ctx.scene.enter('rest'))
+    .then(function() {
+      ctx.session.hasDiary = false   
+      ctx.scene.enter('groups')   
+    })
 })
 
 bot.startPolling()
