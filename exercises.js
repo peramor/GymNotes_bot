@@ -129,4 +129,5 @@ for (let property in time) {
 Exercise.insertMany(exercisesToInsert)
   .then(res => {
     console.log('Exercises are inserted into database')
+    process.exit()    
   })
