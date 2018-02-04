@@ -1,0 +1,42 @@
+image: docker:latest
+
+services:
+  - mongo
+  - redis
+
+stages:
+  - versioning
+  - packaging-test-image
+  - packaging-prod-image
+
+createVersionFile:
+  stage: versioning
+  image: node:8
+  script:
+    - node _ci/create-version-file.js
+  artifacts:
+    paths:
+      - VERSION
+      - NAME
+  only:
+    - pre-master
+    - master
+
+testVersion:
+  stage: packaging-test-image
+  script:
+    - docker login -u $ACR_USER -p $ACR_PWD https://$ACR_HOST
+    - docker build -t $ACR_HOST/"$(cat NAME)":"$(cat VERSION)" .
+    - docker push $ACR_HOST/"$(cat NAME)":"$(cat VERSION)"
+  when: manual
+  only:
+    - pre-master
+
+releaseVersion:
+  stage: packaging-prod-image
+  script: 
+    - echo "NO PAIN NO GAIN"
+  only:
+    - master
+
+

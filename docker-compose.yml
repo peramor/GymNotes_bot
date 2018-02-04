@@ -1,0 +1,44 @@
+version: "3"
+services:
+
+  redis: 
+    image: redis:alpine
+    container_name: "redis-test"
+    command: redis-server --appendonly yes
+    volumes: 
+      - ./db/redis:/data
+    expose:
+      - "6379"
+    networks:
+      - test-network
+    restart: on-failure
+
+  mongo:
+    image: mongo:latest
+    container_name: "mongo-test"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./db/mongo:/data/db
+    networks:
+      - test-network
+    expose:
+      - "27017"
+    restart: on-failure
+
+  bot:
+    image: "gymbotcontregistry.azurecr.io/gymbot:${BOT_TAG_TEST}"
+    container_name: "bot-test"
+    networks:
+      - test-network
+    environment:
+      - TG_BOT_TOKEN=${TG_BOT_TEST_TOKEN}
+      - TELEGRAM_SESSION_HOST=redis
+      - TELEGRAM_SESSION_PORT=6379
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+    restart: always
+
+networks:
+  test-network:

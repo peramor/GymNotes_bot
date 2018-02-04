@@ -1,5 +1,5 @@
 {
-  "name": "gym-bot",
+  "name": "gymbot",
   "version": "0.0.1",
   "scripts": {
     "start": "node bot.js"
