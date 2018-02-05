@@ -8,7 +8,7 @@ const { enter, leave } = Stage
 const seed = require('./exercises')
 const prettyjson = require('prettyjson') // prints debug messages
 
-console.log("bot has started")
+console.log("bot has been started")
 
 const session = new RedisSession({
   store: {
