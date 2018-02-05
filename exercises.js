@@ -129,7 +129,3 @@ for (let property in time) {
 
 // Exercises collection in database should be empty
 Exercise.insertMany(exercisesToInsert)
-  .then(res => {
-    console.log('Exercises are inserted into database')
-    process.exit()    
-  })
