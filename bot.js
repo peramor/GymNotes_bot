@@ -6,6 +6,9 @@ const Stage = require('telegraf/stage')
 const userDb = require('./lib/db/controllers/user.controller')
 const { enter, leave } = Stage
 const seed = require('./exercises')
+const prettyjson = require('prettyjson') // prints debug messages
+
+console.log("bot has started")
 
 const session = new RedisSession({
   store: {
@@ -26,10 +29,9 @@ bot.use(stage.middleware())
 
 bot.start(ctx => {
   userDb.createUser(ctx.from.id)
-    .then(function() {
-      ctx.session.hasDiary = false   
-      ctx.scene.enter('rest')   
-    })
+    .then(ctx.scene.enter('rest'))
 })
+
+bot.hears(/debug/, ctx => ctx.reply(prettyjson.render(ctx.session)))
 
 bot.startPolling()

@@ -9,6 +9,7 @@
     "moment": "^2.20.1",
     "mongoose": "^5.0.1",
     "path": "^0.12.7",
+    "prettyjson": "^1.2.1",
     "telegraf": "^3.17.5",
     "telegraf-session-redis": "^5.0.0"
   }
