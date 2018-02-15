@@ -27,9 +27,9 @@ scenesPaths.forEach(path => stage.register(require(path)))
 bot.use(session.middleware())
 bot.use(stage.middleware())
 
-bot.start(ctx => {
-  userDb.createUser(ctx.from.id)
-    .then(ctx.scene.enter('rest'))
+bot.start(async ctx => {
+  await userDb.createUser(ctx.from.id)
+  ctx.scene.enter('rest')
 })
 
 bot.hears(/debug/, ctx => ctx.reply(prettyjson.render(ctx.session)))
