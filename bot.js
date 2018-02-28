@@ -5,8 +5,9 @@ const path = require('path')
 const Stage = require('telegraf/stage')
 const userDb = require('./lib/db/controllers/user.controller')
 const { enter, leave } = Stage
-const seed = require('./exercises')
+const seed = require('./lib/utils/exercises')
 const prettyjson = require('prettyjson') // prints debug messages
+const stat = require('./lib/utils/stat') // collects statistics
 
 console.log("bot has been started")
 
@@ -27,11 +28,13 @@ scenesPaths.forEach(path => stage.register(require(path)))
 bot.use(session.middleware())
 bot.use(stage.middleware())
 
+bot.use(stat)
+
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
   ctx.scene.enter('rest')
 })
 
-bot.hears(/debug/, ctx => ctx.reply(prettyjson.render(ctx.session)))
+bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
 bot.startPolling()
