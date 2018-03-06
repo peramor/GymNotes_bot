@@ -28,6 +28,7 @@ const session = new RedisSession({
   }
 })
 let stage = new Stage()
+stage.use(stat.middleware)
 // array of paths to scenes
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
@@ -49,7 +50,7 @@ bot.use(stage.middleware())
  * For sending data about each accepted message to chatbase with
  * purpose to get usefull insides.
  */
-bot.use(stat.middleware)
+// bot.use(stat.middleware)
 
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
