@@ -59,9 +59,18 @@ bot.start(async ctx => {
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
-bot.startPolling()
-
+/**
+ * Prints error, Sends statistic, Replies to client
+ * @param {String} err.message will be sent to client
+ * @param {Object} err.ctx - context of request
+ */
 bot.catch((err) => {
-  console.error('telegraf:', err)
-  // TODO: notify developers
+  if (err.unhandled) {
+    err.ctx.reply(err.message)
+    stat.track(err.ctx, {handled: false, botReply: err.message})
+  } else {
+    console.error('telegraf:', err)
+  }
 })
+
+bot.startPolling()
