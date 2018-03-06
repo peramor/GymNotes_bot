@@ -58,7 +58,7 @@ bot.start(async ctx => {
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
-bot.startPolling() 
+bot.startPolling()
 
 bot.catch((err) => {
   console.error('telegraf:', err)
