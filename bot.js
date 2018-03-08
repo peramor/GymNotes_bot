@@ -28,6 +28,10 @@ const session = new RedisSession({
   }
 })
 let stage = new Stage()
+/**
+ * For sending data about each accepted message to chatbase with
+ * purpose to get usefull insides.
+ */
 stage.use(stat.middleware)
 // array of paths to scenes
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
@@ -46,11 +50,7 @@ bot.use(session.middleware())
  * which is described in State Mashine (docs/sm-map).
  */
 bot.use(stage.middleware())
-/**
- * For sending data about each accepted message to chatbase with
- * purpose to get usefull insides.
- */
-// bot.use(stat.middleware)
+
 
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
@@ -64,10 +64,11 @@ bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
  * @param {String} err.message will be sent to client
  * @param {Object} err.ctx - context of request
  */
-bot.catch((err) => {
+bot.catch(async (err) => {
   if (err.unhandled) {
     err.ctx.reply(err.message)
-    stat.track(err.ctx, {handled: false, botReply: err.message})
+    await stat.track(err.ctx, { handled: false })
+    await stat.trackBotReply(err.ctx, err.message)
   } else {
     console.error('telegraf:', err)
   }
