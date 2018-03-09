@@ -34,6 +34,7 @@ let stage = new Stage()
  */
 stage.use(stat.middleware)
 // array of paths to scenes
+stage.register(require('./lib/scenes/rest'))
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
