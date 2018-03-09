@@ -25,7 +25,6 @@ testVersion:
     - docker login -u $ACR_USER -p $ACR_PWD https://$ACR_HOST
     - docker build -t $ACR_HOST/"$(cat NAME)":"$(cat VERSION)" .
     - docker push $ACR_HOST/"$(cat NAME)":"$(cat VERSION)"
-  when: manual
   only:
     - pre-master
 
