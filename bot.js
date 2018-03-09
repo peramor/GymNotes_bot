@@ -8,6 +8,7 @@ const { enter, leave } = Stage
 const seed = require('./lib/utils/exercises') // add default objects to exercises db
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
+const sessionManager = require('./lib/utils/session-manager')
 
 console.log("bot has been started")
 
@@ -27,31 +28,33 @@ const session = new RedisSession({
     port: redisPort
   }
 })
+/**
+ * For saving all session meta, and do not lose it
+ * if bot will restart.
+ */
+bot.use(session.middleware())
+
 let stage = new Stage()
 /**
  * For sending data about each accepted message to chatbase with
  * purpose to get usefull insides.
  */
 stage.use(stat.middleware)
+
 // array of paths to scenes
 stage.register(require('./lib/scenes/rest'))
+stage.register(require('./lib/scenes/repeats'))
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
-bot.use((ctx, next) => {
-  return next()
-})
-/**
- * For saving all session meta, and do not lose it
- * if bot will restart.
- */
-bot.use(session.middleware())
+// Checking whether user forgot to end training
+stage.use(sessionManager.middleware)
+
 /**
  * For navigation between different scenes, make transitions
  * which is described in State Mashine (docs/sm-map).
  */
 bot.use(stage.middleware())
-
 
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
