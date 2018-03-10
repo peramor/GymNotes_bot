@@ -74,4 +74,20 @@ bot.catch(async (err) => {
   }
 })
 
-bot.startPolling()
+// TLS options
+const tlsOptions = {
+  key: fs.readFileSync('server-key.pem'),
+  cert: fs.readFileSync('server-cert.pem'),
+  ca: [
+    // This is necessary only if the client uses the self-signed certificate.
+    fs.readFileSync('client-cert.pem')
+  ]
+}
+
+// Set telegram webhook
+bot.telegram.setWebhook('https://server.tld:8443/secret-path', {
+  source: fs.readFileSync('server-cert.pem')
+})
+
+// Start https webhook
+bot.startWebhook('/secret-path', tlsOptions, 8443)
