@@ -42,9 +42,7 @@ let stage = new Stage()
 stage.use(stat.middleware)
 
 // array of paths to scenes
-stage.register(require('./lib/scenes/rest'))
-stage.register(require('./lib/scenes/repeats'))
-let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
+let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/**/index.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
 // Checking whether user forgot to end training
