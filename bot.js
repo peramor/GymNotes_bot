@@ -61,10 +61,15 @@ bot.start(async ctx => {
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
+bot.on('edited_message', ctx => {
+  if (ctx.session.train && ctx.session.train.exercises)
+    sessionManager.editRepeat(ctx)
+})
+
 /**
  * Prints error, Sends statistic, Replies to client
  * @param {String} err.message will be sent to client
- * @param {Object} err.ctx - context of request
+ * @param {Object} err.ctx context of request
  */
 bot.catch(async (err) => {
   if (err.unhandled) {
