@@ -9,6 +9,8 @@ const seed = require('./lib/utils/exercises') // add default objects to exercise
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
 const sessionManager = require('./lib/utils/session-manager')
+const moment = require('moment')
+const Extra = require('telegraf/extra')
 
 console.log("bot has been started")
 
@@ -64,6 +66,18 @@ bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 bot.on('edited_message', ctx => {
   if (ctx.session.train && ctx.session.train.exercises)
     sessionManager.editRepeat(ctx)
+})
+
+// All callback_queries are gone through this handler
+bot.on('callback_query', async ctx => {
+  try {
+    if (ctx.callbackQuery.data === 'delete repeat')
+      await sessionManager.deleteRepeat(ctx)
+    else if (moment(ctx.callbackQuery.data))
+      await sessionManager.changeTrain(ctx)
+  } catch (error) {
+    return
+  }
 })
 
 /**
