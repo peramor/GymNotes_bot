@@ -9,22 +9,20 @@ const seed = require('./lib/utils/exercises') // add default objects to exercise
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
 
-console.log("bot has been started")
+const REDIS_HOST = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
+const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
+const BOT_TOKEN = process.env.TG_BOT_TOKEN
 
-let redisHost = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
-let redisPort = process.env.TELEGRAM_SESSION_PORT || 6379
-let botToken = process.env.TG_BOT_TOKEN
-
-if (!botToken) {
+if (!BOT_TOKEN) {
   console.error('Bot token is not found. Environment variable TG_BOT_TOKEN is required')
   process.exit(-1)
 }
 
-const bot = new Telegraf(botToken)
+const bot = new Telegraf(BOT_TOKEN)
 const session = new RedisSession({
   store: {
-    host: redisHost,
-    port: redisPort
+    host: REDIS_HOST,
+    port: REDIS_PORT
   }
 })
 let stage = new Stage()
@@ -33,13 +31,11 @@ let stage = new Stage()
  * purpose to get usefull insides.
  */
 stage.use(stat.middleware)
+
 // array of paths to scenes
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
-bot.use((ctx, next) => {
-  return next()
-})
 /**
  * For saving all session meta, and do not lose it
  * if bot will restart.
@@ -74,6 +70,12 @@ bot.catch(async (err) => {
   }
 })
 
+if (process.env.TG_DEBUG_MODE) {
+  bot.startPolling()
+  console.log("bot has been started in LP mode")
+  return
+}
+
 // TLS options
 const tlsOptions = {
   key: fs.readFileSync('server-key.pem'),
@@ -90,4 +92,7 @@ bot.telegram.setWebhook('https://server.tld:8443/secret-path', {
 })
 
 // Start https webhook
-bot.startWebhook('/secret-path', tlsOptions, 8443)
+bot.startWebhook('/secret-path', tlsOptions, 8443, SERVER_HOST, (err) => {
+  if (!err)
+    console.log("bot has been started in 'Webhooks' mode")
+})
