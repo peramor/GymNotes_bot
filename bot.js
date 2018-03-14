@@ -8,10 +8,13 @@ const { enter, leave } = Stage
 const seed = require('./lib/utils/exercises') // add default objects to exercises db
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
+const md5 = require('md5') // for hashing token
 
 const REDIS_HOST = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
 const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
 const BOT_TOKEN = process.env.TG_BOT_TOKEN
+const BOT_WEBHOOK_HOST = process.env.BOT_WEBHOOK_HOST || '127.0.0.1'
+const BOT_WEBHOOK_PORT = process.env.BOT_WEBHOOK_PORT || 3000
 
 if (!BOT_TOKEN) {
   console.error('Bot token is not found. Environment variable TG_BOT_TOKEN is required')
@@ -74,25 +77,13 @@ if (process.env.TG_DEBUG_MODE) {
   bot.startPolling()
   console.log("bot has been started in LP mode")
   return
-}
-
-// TLS options
-const tlsOptions = {
-  key: fs.readFileSync('server-key.pem'),
-  cert: fs.readFileSync('server-cert.pem'),
-  ca: [
-    // This is necessary only if the client uses the self-signed certificate.
-    fs.readFileSync('client-cert.pem')
-  ]
-}
-
-// Set telegram webhook
-bot.telegram.setWebhook('https://server.tld:8443/secret-path', {
-  source: fs.readFileSync('server-cert.pem')
-})
-
-// Start https webhook
-bot.startWebhook('/secret-path', tlsOptions, 8443, SERVER_HOST, (err) => {
-  if (!err)
+} else {
+  // Start https webhook
+  bot.startWebhook(`/bot/${md5(BOT_TOKEN)}`, null, BOT_WEBHOOK_PORT, BOT_WEBHOOK_HOST, (err) => {
+    if (err) {
+      console.error("Bot hasn't been started in 'Webhooks' mode", err)
+      process.exit(-1)
+    }
     console.log("bot has been started in 'Webhooks' mode")
-})
+  })
+}
