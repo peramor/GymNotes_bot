@@ -13,8 +13,8 @@ const md5 = require('md5') // for hashing token
 const REDIS_HOST = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
 const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
 const BOT_TOKEN = process.env.TG_BOT_TOKEN
-const BOT_WEBHOOK_HOST = process.env.BOT_WEBHOOK_HOST || '127.0.0.1'
-const BOT_WEBHOOK_PORT = process.env.BOT_WEBHOOK_PORT || 3000
+const HOST = process.env.HOST || '127.0.0.1'
+const PORT = process.env.PORT || 3000
 
 if (!BOT_TOKEN) {
   console.error('Bot token is not found. Environment variable TG_BOT_TOKEN is required')
@@ -79,11 +79,5 @@ if (process.env.TG_DEBUG_MODE) {
   return
 } else {
   // Start https webhook
-  bot.startWebhook(`/bot/${md5(BOT_TOKEN)}`, null, BOT_WEBHOOK_PORT, BOT_WEBHOOK_HOST, (err) => {
-    if (err) {
-      console.error("Bot hasn't been started in 'Webhooks' mode", err)
-      process.exit(-1)
-    }
-    console.log("bot has been started in 'Webhooks' mode")
-  })
+  bot.startWebhook(`/bot/${md5(BOT_TOKEN)}`, null, PORT)
 }
