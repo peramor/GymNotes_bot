@@ -54,11 +54,6 @@ stage.use(stat.middleware)
 let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/**/index.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
-/**
- * For saving all session meta, and do not lose it
- * if bot will restart.
- */
-bot.use(session.middleware())
 // Checking whether user forgot to end training
 stage.use(sessionManager.middleware)
 
