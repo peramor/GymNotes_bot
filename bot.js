@@ -15,13 +15,19 @@ const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
 const BOT_TOKEN = process.env.TG_BOT_TOKEN
 const HOST = process.env.HOST || '127.0.0.1'
 const PORT = process.env.PORT || 3000
+const DEBUG_MODE = process.env.TG_DEBUG_MODE === 'true'
 
 if (!BOT_TOKEN) {
   console.error('Bot token is not found. Environment variable TG_BOT_TOKEN is required')
   process.exit(-1)
 }
 
-const bot = new Telegraf(BOT_TOKEN)
+const bot = new Telegraf(BOT_TOKEN, {
+  telegram: {
+    webhookReply: !DEBUG_MODE
+  }
+})
+
 const session = new RedisSession({
   store: {
     host: REDIS_HOST,
@@ -73,7 +79,7 @@ bot.catch(async (err) => {
   }
 })
 
-if (process.env.TG_DEBUG_MODE) {
+if (DEBUG_MODE) {
   bot.startPolling()
   console.log("bot has been started in LP mode")
   return

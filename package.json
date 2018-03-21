@@ -12,7 +12,7 @@
     "path": "^0.12.7",
     "prettyjson": "^1.2.1",
     "request": "^2.83.0",
-    "telegraf": "^3.17.5",
+    "telegraf": "^3.19.0",
     "telegraf-session-redis": "^5.0.0"
   }
 }
