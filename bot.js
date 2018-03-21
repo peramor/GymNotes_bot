@@ -59,7 +59,7 @@ bot.use(stage.middleware())
 
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
-  ctx.scene.enter('rest')
+  return ctx.scene.enter('rest')
 })
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
