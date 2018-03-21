@@ -9,6 +9,9 @@ const seed = require('./lib/utils/exercises') // add default objects to exercise
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
 const md5 = require('md5') // for hashing token
+const sessionManager = require('./lib/utils/session-manager')
+const moment = require('moment')
+const Extra = require('telegraf/extra')
 
 const REDIS_HOST = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
 const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
@@ -34,6 +37,12 @@ const session = new RedisSession({
     port: REDIS_PORT
   }
 })
+/**
+ * For saving all session meta, and do not lose it
+ * if bot will restart.
+ */
+bot.use(session.middleware())
+
 let stage = new Stage()
 /**
  * For sending data about each accepted message to chatbase with
@@ -42,7 +51,7 @@ let stage = new Stage()
 stage.use(stat.middleware)
 
 // array of paths to scenes
-let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
+let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/**/index.js'))
 scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
 /**
@@ -50,12 +59,14 @@ scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
  * if bot will restart.
  */
 bot.use(session.middleware())
+// Checking whether user forgot to end training
+stage.use(sessionManager.middleware)
+
 /**
  * For navigation between different scenes, make transitions
  * which is described in State Mashine (docs/sm-map).
  */
 bot.use(stage.middleware())
-
 
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
@@ -64,10 +75,27 @@ bot.start(async ctx => {
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
+bot.on('edited_message', ctx => {
+  if (ctx.session.train && ctx.session.train.exercises)
+    sessionManager.editRepeat(ctx)
+})
+
+// All callback_queries are gone through this handler
+bot.on('callback_query', async ctx => {
+  try {
+    if (ctx.callbackQuery.data === 'delete repeat')
+      await sessionManager.deleteRepeat(ctx)
+    else if (moment(ctx.callbackQuery.data))
+      await sessionManager.changeTrain(ctx)
+  } catch (error) {
+    return
+  }
+})
+
 /**
  * Prints error, Sends statistic, Replies to client
  * @param {String} err.message will be sent to client
- * @param {Object} err.ctx - context of request
+ * @param {Object} err.ctx context of request
  */
 bot.catch(async (err) => {
   if (err.unhandled) {
