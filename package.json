@@ -1,17 +1,18 @@
 {
   "name": "gymbot",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
     "glob": "^7.1.2",
+    "md5": "^2.2.1",
     "moment": "^2.20.1",
     "mongoose": "^5.0.1",
     "path": "^0.12.7",
     "prettyjson": "^1.2.1",
     "request": "^2.83.0",
-    "telegraf": "^3.17.5",
+    "telegraf": "^3.19.0",
     "telegraf-session-redis": "^5.0.0"
   }
 }
