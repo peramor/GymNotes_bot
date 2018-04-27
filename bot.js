@@ -8,61 +8,89 @@ const { enter, leave } = Stage
 const seed = require('./lib/utils/exercises') // add default objects to exercises db
 const prettyjson = require('prettyjson') // prints debug messages
 const stat = require('./lib/utils/stat') // collects statistics
+const md5 = require('md5') // for hashing token
+const sessionManager = require('./lib/utils/session-manager')
+const moment = require('moment')
+const Extra = require('telegraf/extra')
 
-console.log("bot has been started")
+const REDIS_HOST = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
+const REDIS_PORT = process.env.TELEGRAM_SESSION_PORT || 6379
+const BOT_TOKEN = process.env.TG_BOT_TOKEN
+const HOST = process.env.HOST || '127.0.0.1'
+const PORT = process.env.PORT || 3000
+const DEBUG_MODE = process.env.TG_DEBUG_MODE === 'true'
 
-let redisHost = process.env.TELEGRAM_SESSION_HOST || '127.0.0.1'
-let redisPort = process.env.TELEGRAM_SESSION_PORT || 6379
-let botToken = process.env.TG_BOT_TOKEN
-
-if (!botToken) {
+if (!BOT_TOKEN) {
   console.error('Bot token is not found. Environment variable TG_BOT_TOKEN is required')
   process.exit(-1)
 }
 
-const bot = new Telegraf(botToken)
-const session = new RedisSession({
-  store: {
-    host: redisHost,
-    port: redisPort
+const bot = new Telegraf(BOT_TOKEN, {
+  telegram: {
+    webhookReply: !DEBUG_MODE
   }
 })
-let stage = new Stage()
-/**
- * For sending data about each accepted message to chatbase with
- * purpose to get usefull insides.
- */
-stage.use(stat.middleware)
-// array of paths to scenes
-let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/*.js'))
-scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
 
-bot.use((ctx, next) => {
-  return next()
+const session = new RedisSession({
+  store: {
+    host: REDIS_HOST,
+    port: REDIS_PORT
+  }
 })
 /**
  * For saving all session meta, and do not lose it
  * if bot will restart.
  */
 bot.use(session.middleware())
+
+let stage = new Stage()
+/**
+ * For sending data about each accepted message to chatbase with
+ * purpose to get usefull insides.
+ */
+stage.use(stat.middleware)
+
+// array of paths to scenes
+let scenesPaths = glob.sync(path.join(__dirname, 'lib/scenes/**/index.js'))
+scenesPaths.forEach(scenePath => stage.register(require(scenePath)))
+
+// Checking whether user forgot to end training
+stage.use(sessionManager.middleware)
+
 /**
  * For navigation between different scenes, make transitions
  * which is described in State Mashine (docs/sm-map).
  */
 bot.use(stage.middleware())
 
-
 bot.start(async ctx => {
   await userDb.createUser(ctx.from.id)
-  ctx.scene.enter('rest')
+  return ctx.scene.enter('rest')
 })
 
 bot.hears('debug', ctx => ctx.reply(prettyjson.render(ctx.session)))
 
+bot.on('edited_message', ctx => {
+  if (ctx.session.train && ctx.session.train.exercises)
+    sessionManager.editRepeat(ctx)
+})
+
+// All callback_queries are gone through this handler
+bot.on('callback_query', async ctx => {
+  try {
+    if (ctx.callbackQuery.data === 'delete repeat')
+      await sessionManager.deleteRepeat(ctx)
+    else if (moment(ctx.callbackQuery.data))
+      await sessionManager.changeTrain(ctx)
+  } catch (error) {
+    return
+  }
+})
+
 /**
  * Prints error, Sends statistic, Replies to client
  * @param {String} err.message will be sent to client
- * @param {Object} err.ctx - context of request
+ * @param {Object} err.ctx context of request
  */
 bot.catch(async (err) => {
   if (err.unhandled) {
@@ -74,4 +102,11 @@ bot.catch(async (err) => {
   }
 })
 
-bot.startPolling()
+if (DEBUG_MODE) {
+  bot.startPolling()
+  console.log("bot has been started in LP mode")
+  return
+} else {
+  // Start https webhook
+  bot.startWebhook(`/bot/${md5(BOT_TOKEN)}`, null, PORT)
+}
